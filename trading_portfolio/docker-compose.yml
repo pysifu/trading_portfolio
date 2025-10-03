@@ -1,0 +1,52 @@
+
+services:
+  postgres_main:
+    image: postgres:13
+    env_file:
+      - .env.docker
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB_MAIN}
+      POSTGRES_USER: ${POSTGRES_USER_MAIN}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_MAIN}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_main_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER_MAIN} -d ${POSTGRES_DB_MAIN}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres_analytics:
+    image: postgres:13
+    env_file:
+      - .env.docker
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB_ANALYTICS}
+      POSTGRES_USER: ${POSTGRES_USER_ANALYTICS}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_ANALYTICS}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_analytics_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER_ANALYTICS} -d ${POSTGRES_DB_ANALYTICS}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    env_file:
+      - .env.docker
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_main_data:
+  postgres_analytics_data:
+  redis_data:
